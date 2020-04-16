@@ -53,3 +53,27 @@ class Agent():
             action = action + self.noise.sample()
         return np.clip(action, -1, 1)
     
+    def reset(self):
+        self.noise.reset()
+        
+    def learn(self, experiences, gamma):
+        states, actions, rewards, next_states, dones = experiences
+        actions_next = self.actor_target(next_states)
+        Q_targets_next = self.critic_target(next_states, actions_next)
+        Q_targets = rewards + (gamma*Q_targets_next*(1-dones))
+        Q_expected = self.critic_local(states, actions)
+        critic_loss = F.mse_loss(Q_expected, Q_targets)
+        
+        self.critic_optimizer.zero_grad()
+        critic_loss.backward()
+        self.critic_optimizer.step()
+        
+        actions_pred = self.actor_local(states)
+        actor_loss = -self.critic_local(states, actions_pred).mean()
+        
+        self.actor_optimizer.zero_grad()
+        actor_loss.backward()
+        self.actor_optimizer.step()
+        
+        self.soft_update(self.critic_local, self.critic_target, Tau)
+        self.soft_update(self.actor_local, self.actor_target, Tau)
