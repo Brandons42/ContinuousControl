@@ -77,3 +77,29 @@ class Agent():
         
         self.soft_update(self.critic_local, self.critic_target, Tau)
         self.soft_update(self.actor_local, self.actor_target, Tau)
+    def soft_update(self, local_model, target_model, tau):
+        for target_param, local_param in zip(target_model.parameters(), local_model.parameters()):
+            target_param.data.copy_(tau*local_param.data + (1.0 - tau)*target_param.data)
+     
+class OUNoise:
+    def __init__(self, size, seed, mu=0., theta = 0.15, sigma = 0.2):
+        self.mu = mu*np.ones(size)
+        self.theta = theta
+        self.sigma = sigma
+        self.seed = random.seed(seed)
+        self.reset()
+    def reset(self):
+        self.state = copy.copy(self.mu)
+    def sample(self):
+        x = self.state
+        dx = self.theta *(self.mu - x) + self.sigma*np.array([random.random() for i in range(len(x))])
+        self.state = x + dx
+        return self.state
+    
+ class ReplayBuffer:
+    def __init__(self, action_size, buffer_size, batch_size, seed):
+        self.action_size = action_size
+        self.memory = deque(maxlen = buffer_size)
+        self.batch_size = batch_size
+        self.experience = namedtuple("Experience", field_names=["state", "action", "reward", "next_state", "done"])
+        self.seed = random.seed(seed)
