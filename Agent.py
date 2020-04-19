@@ -20,9 +20,10 @@ Weight_Decay = 0
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 class Agent():
-    def __init__(self, state_size, action_size, random_seed):
+    def __init__(self, state_size, action_size, no_agents, random_seed):
         self.state_size = state_size
         self.action_size = action_size
+        self.num_agents = no_agents
         self.seed = random.seed(random_seed)
         
         self.actor_local = Actor(state_size, action_size, random_seed).to(device)
@@ -60,10 +61,10 @@ class Agent():
         states, actions, rewards, next_states, dones = experiences
         actions_next = self.actor_target(next_states)
         Q_targets_next = self.critic_target(next_states, actions_next)
+        dones = dones.type(torch.DoubleTensor).to(device)
         Q_targets = rewards + (gamma*Q_targets_next*(1-dones))
         Q_expected = self.critic_local(states, actions)
         critic_loss = F.mse_loss(Q_expected, Q_targets)
-        
         self.critic_optimizer.zero_grad()
         critic_loss.backward()
         self.critic_optimizer.step()
@@ -80,7 +81,6 @@ class Agent():
     def soft_update(self, local_model, target_model, tau):
         for target_param, local_param in zip(target_model.parameters(), local_model.parameters()):
             target_param.data.copy_(tau*local_param.data + (1.0 - tau)*target_param.data)
-     
 class OUNoise:
     def __init__(self, size, seed, mu=0., theta = 0.15, sigma = 0.2):
         self.mu = mu*np.ones(size)
@@ -96,7 +96,7 @@ class OUNoise:
         self.state = x + dx
         return self.state
     
- class ReplayBuffer:
+class ReplayBuffer:
     def __init__(self, action_size, buffer_size, batch_size, seed):
         self.action_size = action_size
         self.memory = deque(maxlen = buffer_size)
@@ -105,7 +105,7 @@ class OUNoise:
         self.seed = random.seed(seed)
     
     def add(self, state, action, reward, next_state, done):
-        e = self.experience(state, action, reward, next_stae, done)
+        e = self.experience(state, action, reward, next_state, done)
         self.memory.append(e)
         
     def sample(self):
@@ -115,7 +115,6 @@ class OUNoise:
         rewards = torch.from_numpy(np.vstack([e.reward for e in experiences if e is not None])).float().to(device)
         next_states = torch.from_numpy(np.vstack([e.next_state for e in experiences if e is not None])).float().to(device)
         dones = torch.from_numpy(np.vstack([e.done for e in experiences if e is not None])).float().to(device)
-        
         return(states, actions, rewards, next_states, dones)
     def __len__(self):
         return len(self.memory)

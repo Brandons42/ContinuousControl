@@ -9,7 +9,7 @@ def hidden_init(layer):
     lim = 1./np.sqrt(fan_in)
     return (-lim,lim)
 
-class Actor(nn.module):
+class Actor(nn.Module):
     def __init__(self, state_size, action_size, seed, fc1_units = 400, fc2_units = 300):
         super(Actor, self).__init__()
         self.seed = torch.manual_seed(seed)
@@ -26,11 +26,11 @@ class Actor(nn.module):
     def forward(self, state):
         x = F.relu(self.fc1(state))
         x = F.relu(self.fc2(x))
-        return F.tanh(self.fc3(x))
+        return torch.tanh(self.fc3(x))
     
-class Critic(nn.module):
-    def __init__(state_size, action_size, seed, fcs1_units = 400, fc2_units=300):
-        super(Critic,self).__init__()
+class Critic(nn.Module):
+    def __init__(self, state_size, action_size, seed, fcs1_units=400, fc2_units=300):
+        super(Critic, self).__init__()
         self.seed = torch.manual_seed(seed)
         self.fcs1 = nn.Linear(state_size, fcs1_units)
         self.fc2 = nn.Linear(fcs1_units+action_size, fc2_units)
