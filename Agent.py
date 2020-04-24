@@ -9,13 +9,19 @@ import torch
 import torch.nn.functional as F
 import torch.optim as optim
 
-Buffer = int(1e5)
+Buffer = int(1e6)
 Batch = 128
 Gamma = 0.99
 Tau = 1e-3
 LR_Actor = 1e-4
 LR_Critic = 1e-3
 Weight_Decay = 0
+
+Update_every = 10
+Update_times = 20
+
+epsilon = 1.0
+epsilon_decay = 1e-6
 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
@@ -28,30 +34,37 @@ class Agent():
         
         self.actor_local = Actor(state_size, action_size, random_seed).to(device)
         self.actor_target = Actor(state_size, action_size, random_seed).to(device)
+        self.soft_update(self.actor_local, self.actor_target, 1)
         self.actor_optimizer = optim.Adam(self.actor_local.parameters(), lr = LR_Actor)
         
         self.critic_local = Critic(state_size, action_size, random_seed).to(device)
         self.critic_target = Critic(state_size, action_size, random_seed).to(device)
+        self.soft_update(self.critic_local, self.critic_target, 1)
         self.critic_optimizer = optim.Adam(self.critic_local.parameters(), lr = LR_Critic)
         
         self.noise = OUNoise(action_size, random_seed)
+        self.t_step = 0
+        self.epsilon = epsilon
         
         self.memory = ReplayBuffer(action_size, Buffer, Batch, random_seed)
         
     def step(self, state, action, reward, next_state, done):
         self.memory.add(state, action, reward, next_state, done)
-        if len(self.memory) > Batch:
-            experiences = self.memory.sample()
-            self.learn(experiences, Gamma)
+        self.t_step = (self.t_step + 1) % Update_every
+        if len(self.memory) > Batch and self.t_step == 0:
+            for _ in range(Update_times):
+                experiences = self.memory.sample()
+                self.learn(experiences, Gamma)
         
     def act(self, state, add_noise=True):
         state = torch.from_numpy(state).float().to(device)
         self.actor_local.eval()
+        self.epsilon = self.epsilon - epsilon_decay
         with torch.no_grad():
             action = self.actor_local(state).cpu().data.numpy()
         self.actor_local.train()
         if add_noise:
-            action = action + self.noise.sample()
+            action = action + np.maximum(self.epsilon, 0.2)*self.noise.sample()
         return np.clip(action, -1, 1)
     
     def reset(self):
@@ -61,12 +74,12 @@ class Agent():
         states, actions, rewards, next_states, dones = experiences
         actions_next = self.actor_target(next_states)
         Q_targets_next = self.critic_target(next_states, actions_next)
-        dones = dones.type(torch.DoubleTensor).to(device)
         Q_targets = rewards + (gamma*Q_targets_next*(1-dones))
         Q_expected = self.critic_local(states, actions)
         critic_loss = F.mse_loss(Q_expected, Q_targets)
         self.critic_optimizer.zero_grad()
         critic_loss.backward()
+        torch.nn.utils.clip_grad_norm_(self.critic_local.parameters(), 1)
         self.critic_optimizer.step()
         
         actions_pred = self.actor_local(states)
