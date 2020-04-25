@@ -17,6 +17,7 @@ class Actor(nn.Module):
         self.bn1 = nn.BatchNorm1d(fc1_units)
         self.fc2 = nn.Linear(fc1_units, fc2_units)
         self.fc3 = nn.Linear(fc2_units, action_size)
+        self.dpout = nn.Dropout(p=0.15)
         self.reset_parameters()
         
     def reset_parameters(self):

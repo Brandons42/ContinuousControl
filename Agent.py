@@ -11,11 +11,11 @@ import torch.optim as optim
 
 Buffer = int(1e6)
 Batch = 128
-Gamma = 0.99
+Gamma = 0.95
 Tau = 1e-3
 LR_Actor = 1e-4
 LR_Critic = 1e-3
-Weight_Decay = 0
+Weight_Decay = 0.99
 
 Update_every = 20
 Update_times = 10
@@ -73,7 +73,7 @@ class Agent():
     def learn(self, experiences, gamma):
         states, actions, rewards, next_states, dones = experiences
         actions_next = self.actor_target(next_states)
-        Q_targets_next = self.critic_target(next_states, actions_next)
+        Q_targets_next = self.critic_target(next_states, actions_next).detach()
         Q_targets = rewards + (gamma*Q_targets_next*(1-dones))
         Q_expected = self.critic_local(states, actions)
         critic_loss = F.mse_loss(Q_expected, Q_targets)
@@ -105,7 +105,7 @@ class OUNoise:
         self.state = copy.copy(self.mu)
     def sample(self):
         x = self.state
-        dx = self.theta *(self.mu - x) + self.sigma*np.array([random.random() for i in range(len(x))])
+        dx = self.theta * (self.mu - x) + self.sigma * (np.random.rand(*x.shape)-0.5)
         self.state = x + dx
         return self.state
     
@@ -127,7 +127,7 @@ class ReplayBuffer:
         actions = torch.from_numpy(np.vstack([e.action for e in experiences if e is not None])).float().to(device)
         rewards = torch.from_numpy(np.vstack([e.reward for e in experiences if e is not None])).float().to(device)
         next_states = torch.from_numpy(np.vstack([e.next_state for e in experiences if e is not None])).float().to(device)
-        dones = torch.from_numpy(np.vstack([e.done for e in experiences if e is not None])).float().to(device)
+        dones = torch.from_numpy(np.vstack([e.done for e in experiences if e is not None]).astype(np.uint8)).float().to(device)
         return(states, actions, rewards, next_states, dones)
     def __len__(self):
         return len(self.memory)
