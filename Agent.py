@@ -17,8 +17,8 @@ LR_Actor = 1e-4
 LR_Critic = 1e-3
 Weight_Decay = 0
 
-Update_every = 10
-Update_times = 20
+Update_every = 20
+Update_times = 10
 
 epsilon = 1.0
 epsilon_decay = 1e-6
