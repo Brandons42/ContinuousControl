@@ -30,6 +30,9 @@ The goal of the agent is to obtain a average score of +30 over 100 consecutive e
 #### Step 1: Figuring out the working range of hyperparameters using the First Version
 
 Since it requires GPU power to solve this problem using the second version, I used the first version to figure out a range of hyper parameters in which the environment is solvable. For this environment, I set a target score of +35 over 100 consective episodes for the agent.
+![Graph2](/img/Graph2.PNG)
+
+It took 461 episodes to achieve an average score of 35.
 
 #### Step 2: Use the hyperparameters that were used to solve the first version
 
