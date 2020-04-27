@@ -29,12 +29,12 @@ The goal of the agent is to obtain a average score of +30 over 100 consecutive e
 
 #### Step 1: Figuring out the working range of hyperparameters using the First Version
 
-Since it requires GPU power to solve this problem using the second version, I used the first version to figure out a range of hyper parameters in which the environment is solvable. For this agent I set a target score of +35 over 100 consective episodes.
+Since it requires GPU power to solve this problem using the second version, I used the first version to figure out a range of hyper parameters in which the environment is solvable. For this environment, I set a target score of +35 over 100 consective episodes for the agent.
 
-#### Option 2: Solve the Second Version
+#### Step 2: Use the hyperparameters that were used to solve the first version
 
-The barrier for solving the second version of the environment is slightly different, to take into account the presence of many agents.  In particular, your agents must get an average score of +30 (over 100 consecutive episodes, and over all agents).  Specifically,
-- After each episode, we add up the rewards that each agent received (without discounting), to get a score for each agent.  This yields 20 (potentially different) scores.  We then take the average of these 20 scores. 
+In the step 2, I used the hyperparameters which were used to solve the first environment for solving the second environment. Although the second version of the environment is slightly different. I had to take into account the presence of many agents.  But still the goal remains the same. The agents must get an average score of +30 (over 100 consecutive episodes, and over all agents).  Specifically,
+- After each episode, I add up the rewards that each agent received (without discounting), to get a score for each agent.  This yields 20 (potentially different) scores.  I then take the average of these 20 scores. 
 - This yields an **average score** for each episode (where the average is over all 20 agents).
 
 The environment is considered solved, when the average (over 100 episodes) of those average scores is at least +30. 
