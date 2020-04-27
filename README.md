@@ -4,11 +4,11 @@
 [image2]: https://user-images.githubusercontent.com/10624937/43851646-d899bf20-9b00-11e8-858c-29b5c2c94ccc.png "Crawler"
 
 
-# Project 2: Continuous Control
+# Project: Continuous Control
 
 ### Introduction
 
-For this project, you will work with the [Reacher](https://github.com/Unity-Technologies/ml-agents/blob/master/docs/Learning-Environment-Examples.md#reacher) environment.
+In this project, I implemented Deep Deterministic Policy Gradient Method to solve a robotic arm to reach its moving target destination using the [Reacher](https://github.com/Unity-Technologies/ml-agents/blob/master/docs/Learning-Environment-Examples.md#reacher) environment.
 
 ![Trained Agent][image1]
 
@@ -18,19 +18,18 @@ The observation space consists of 33 variables corresponding to position, rotati
 
 ### Distributed Training
 
-For this project, we will provide you with two separate versions of the Unity environment:
+For this project, two separate versions of the Unity environment were used:
 - The first version contains a single agent.
 - The second version contains 20 identical agents, each with its own copy of the environment.  
 
 The second version is useful for algorithms like [PPO](https://arxiv.org/pdf/1707.06347.pdf), [A3C](https://arxiv.org/pdf/1602.01783.pdf), and [D4PG](https://openreview.net/pdf?id=SyZipzbCb) that use multiple (non-interacting, parallel) copies of the same agent to distribute the task of gathering experience.  
 
-### Solving the Environment
+### Solving the Environment 
+The goal of the agent is to obtain a average score of +30 over 100 consecutive episodes.
 
-Note that your project submission need only solve one of the two versions of the environment. 
+#### Step 1: Figuring out the working range of hyperparameters using the First Version
 
-#### Option 1: Solve the First Version
-
-The task is episodic, and in order to solve the environment,  your agent must get an average score of +30 over 100 consecutive episodes.
+Since it requires GPU power to solve this problem using the second version, I used the first version to figure out a range of hyper parameters in which the environment is solvable. For this agent I set a target score of +35 over 100 consective episodes.
 
 #### Option 2: Solve the Second Version
 
